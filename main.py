@@ -16,24 +16,32 @@ ENTRY = (
 )
 
 
+def validate_entry(line: str) -> list:
+    """Check the entry against the gate rules; return a list of problems."""
+    problems = []
+    if not line:
+        problems.append("entry is empty")
+    if "\n" in line or "\r" in line:
+        problems.append("entry must be a single line")
+    if len(line) > MAX_LEN:
+        problems.append(f"entry is {len(line)} chars, over the {MAX_LEN} limit")
+    return problems
+
+
 def main() -> int:
     line = ENTRY.strip()
-    if not line:
-        print("entry is empty", file=sys.stderr)
-        return 1
-    if "\n" in line or "\r" in line:
-        print("entry must be a single line", file=sys.stderr)
-        return 1
-    if len(line) > MAX_LEN:
-        print(f"entry is {len(line)} chars, over the {MAX_LEN} limit",
-              file=sys.stderr)
+    problems = validate_entry(line)
+    if problems:
+        for problem in problems:
+            print(problem, file=sys.stderr)
         return 1
     out_dir = os.environ.get("OUTPUT_DIR", "/output")
     os.makedirs(out_dir, exist_ok=True)
     path = os.path.join(out_dir, "entry.txt")
     with open(path, "w", encoding="utf-8") as f:
         f.write(line + "\n")
-    print(f"wrote {len(line)} chars to {path}")
+    print(f"self-check passed: {len(line)}/{MAX_LEN} chars, single line, "
+          f"non-blank -> wrote {path}")
     return 0
 
 
